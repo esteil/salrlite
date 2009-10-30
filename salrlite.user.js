@@ -13,6 +13,9 @@
   var salr_hide_images_from_read_posts = false;
   var do_styling_changes = true;
   
+  // Move seen threads to the top (so unread | read | unseen), keeping order
+  var move_seen_to_top = true;
+  
   /* CSS Utility functions (for add/remove class, basically)
   from http://fredbird.org/lire/log/2005-09-16-javascript-css-functions */
   var CSS = {
@@ -384,7 +387,15 @@
   // This marks each TD with an additioanl 'nonew' class
   function markFullyReadThreads() {
     var seen_threads_xpath = "//tr[contains(@class,'seen')]/td[contains(@class,'title')]/div[contains(@class,'lastseen')]";
-
+    
+    // find the positions to insert
+    var first_unseen = document.getElementById('forum').getElementsByTagName('tbody')[0].getElementsByTagName('tr')[0];
+    // skip announcement thread
+    //if(first_unseen.id == '' || first_unseen.id == null) first_unseen = first_unseen.nextSibling;
+    
+    var move_read = [];
+    var move_new = []
+    
     var result = document.evaluate(seen_threads_xpath, document, null, 6, null);
     var i = 0, node;
     while(node = result.snapshotItem(i++)) {
@@ -397,12 +408,19 @@
       if(document.evaluate('count(a)', node, null, 1, null).numberValue == 1) {
         if(parent) {
           CSS.swapClasses(parent, 'seen', 'salr_nonew');
+          move_read.push(parent);
         }
       } else {
         if(parent) {
           CSS.swapClasses(parent, 'seen', 'salr_seen');
+          move_new.push(parent);
         }
       }
+    }
+    
+    if(move_seen_to_top) {
+      for(var i in move_new) first_unseen.parentNode.insertBefore(move_new[i], first_unseen);
+      for(var i in move_read) first_unseen.parentNode.insertBefore(move_read[i], first_unseen);
     }
   }
   
