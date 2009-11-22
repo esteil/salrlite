@@ -1,0 +1,11 @@
+{
+  "name": "SALR Lite",
+  "version": "1.0",
+  "description": "Simple chrome extension for salrlite userscript",
+  "content_scripts": [
+    {
+      "matches": ["http://forums.somethingawful.com/*"],
+      "js": ["salrlite.user.js"]
+    }
+  ]
+}
