@@ -5,7 +5,9 @@
   "content_scripts": [
     {
       "matches": ["http://forums.somethingawful.com/*"],
-      "js": ["salrlite.user.js"]
+      "js": ["salrlite.user.js", "openallthreads.js"]
     }
-  ]
+  ],
+  "background_page": "background.html",
+  "permissions": ["tabs"]
 }
