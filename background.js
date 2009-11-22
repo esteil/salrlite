@@ -6,7 +6,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
     var i = 0;
     for(i = 0; i < urls.length; i++) {
       console.log("Opening tab for", urls[i]);
-      chrome.tabs.create({url: urls[i]});
+      chrome.tabs.create({url: urls[i], selected: false});
     }
   }
   sendResponse({});
