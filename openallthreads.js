@@ -54,6 +54,10 @@
 	
     chrome.extension.sendRequest({openThreadTabs: urls}, function(response){});
     
+    // disable the link
+    var target = event.target;
+    target.removeEventListener('click', NewPostsInNewTabs, false);
+    target.innerHTML = 'New tabs opened';
   	return;
   }
 })();
