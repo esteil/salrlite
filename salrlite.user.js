@@ -393,6 +393,10 @@
     // skip announcement thread
     //if(first_unseen.id == '' || first_unseen.id == null) first_unseen = first_unseen.nextSibling;
     
+    // make sure it is the first unseen thread, not just any thread
+    while(first_unseen.className.match(/\bseen\b/i))
+      first_unseen = first_unseen.nextSibling;
+    
     var move_read = [];
     var move_new = []
     
@@ -417,6 +421,8 @@
         }
       }
     }
+    
+    console.log('first unseen', first_unseen, first_unseen.innerText);
     
     if(move_seen_to_top) {
       for(var i in move_new) first_unseen.parentNode.insertBefore(move_new[i], first_unseen);
