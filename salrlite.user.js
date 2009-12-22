@@ -7,6 +7,120 @@
 // various parts from SA Last Read for Safari
 
 (function (){
+  var SALR = {};
+  SALR.KeyboardNavigator = function() {
+    window._keyboard_nav = this;
+    var _current_post = null; // element of current post (TABLE.post)
+    var _marker = null; // the arrow on the left marking current post
+    
+    // private methods
+    function getDimensions(el) {
+      var top = 0, 
+          left = 0, 
+          height = 0, 
+          width = 0;
+      
+      var obj = el;
+      if(obj.offsetParent) {
+        do {
+          left += obj.offsetLeft;
+          top += obj.offsetTop;
+        } while(obj = obj.offsetParent);
+      }
+      
+      height = el.offsetHeight;
+      width = el.offsetWidth;
+      
+      return {
+        top: top,
+        left: left,
+        height: height,
+        width: width
+      };
+    }
+    
+    function markCurrentPost() {
+      var pos = getDimensions(_current_post);
+      console.log(_current_post);
+      
+      _marker.style.left = (pos.left - _marker.offsetWidth) + "px";
+      _marker.style.top = pos.top + "px";
+      
+      location.replace('#' + _current_post.id);
+      _current_post.scrollIntoView(true);
+    }
+    
+    function navigateNext() {
+      console.log('navigate next');
+      var obj = _current_post.nextSibling;
+      while(obj && obj.tagName != 'TABLE') 
+        obj = obj.nextSibling;
+        
+      if(obj) _current_post = obj;
+      // if(_current_post.nextSibling) _current_post = _current_post.nextSibling;
+      markCurrentPost();
+    }
+    
+    function navigatePrevious() {
+      console.log('navigate next');
+
+      var obj = _current_post.previousSibling;
+      while(obj && obj.tagName != 'TABLE') 
+        obj = obj.previousSibling;
+
+      if(obj) _current_post = obj;
+      // if(_current_post.previousSibling) _current_post = _current_post.previousSibling;
+      markCurrentPost();
+    }
+    
+    // initialize marker
+    _marker = document.createElement('DIV');
+    _marker.style.position = 'absolute';
+    _marker.style.fontSize = '125%';
+    _marker.style.fontWeight = 'bold';
+    _marker.style.marginTop = '5px'
+    _marker.innerHTML = '&gt;';
+    document.body.appendChild(_marker);
+    
+    // initialize current post index, possibly from URL hash
+    if(location.hash != '') {
+      // figure out index
+      var el = document.getElementById(location.hash.replace(/^#/, ''));
+      console.log('location.hash', location.hash, el);
+      if(el) _current_post = el;
+    }
+    
+    if(!_current_post) {
+      var result = document.evaluate('//table[@class="post"]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+      _current_post = result.singleNodeValue;
+    }
+
+    console.log('current post: ' + _current_post);
+    
+    markCurrentPost();
+      
+    // initialize events
+    window.addEventListener('keyup', function(evt) {
+      var chr = String.fromCharCode(evt.which).toLowerCase();
+      switch(chr) {
+        case 'j': // next post
+          navigateNext();
+          
+          break;
+        case 'k': // previous post
+          navigatePrevious();
+          
+          break;
+        case 'h': // help
+          alert("J   Next Post\nK   Previous Post");
+          break;
+      }
+    });
+    
+    // Public API
+    
+    return this;
+  };
   
   // CONFIGURATION VALUES
   var salr_enable_pager_fading = true;
@@ -104,7 +218,8 @@
    }
   };
   
-  var _threadId = null;
+  var _threadId = null,
+      _keyboard_nav = null;
 
 	function getThreadID(loc) {
 		if(_threadId) return _threadId;
@@ -456,6 +571,11 @@
     }
   }
   
+  // hook up page nagivation
+  function attachKeyboardNav() {
+    _keyboard_nav = new SALR.KeyboardNavigator();
+  }
+  
   function doLastReadStuff() {
     
     // add the styles necessary for the page navigator
@@ -484,7 +604,8 @@
     addPageNavigator();
     fixDropDown();
 
-
+    attachKeyboardNav();
+    
     // add no-new-posts class to seen ones
     if(do_styling_changes) {
       var page_type = getPageType();
