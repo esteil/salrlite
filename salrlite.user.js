@@ -48,7 +48,7 @@
       _marker.style.left = (pos.left - _marker.offsetWidth) + "px";
       _marker.style.top = pos.top + "px";
       
-      location.replace('#' + _current_post.id);
+      // location.replace('#' + _current_post.id);
       _current_post.scrollIntoView(true);
     }
     
@@ -85,7 +85,7 @@
     if(location.hash != '') {
       // figure out index
       var el = document.getElementById(location.hash.replace(/^#/, ''));
-      console.log('location.hash', location.hash, el);
+      // console.log('location.hash', location.hash, el);
       if(el) {
         while(el.tagName != 'TABLE') el = el.parentNode;
       }
@@ -98,7 +98,7 @@
       _current_post = result.singleNodeValue;
     }
 
-    console.log('current post: ' + _current_post);
+    // console.log('current post: ' + _current_post);
     
     markCurrentPost();
       
