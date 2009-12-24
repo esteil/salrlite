@@ -40,6 +40,8 @@
     }
     
     function markCurrentPost() {
+      if(!_current_post) return;
+      
       var pos = getDimensions(_current_post);
       console.log(_current_post);
       
@@ -51,7 +53,6 @@
     }
     
     function navigateNext() {
-      console.log('navigate next');
       var obj = _current_post.nextSibling;
       while(obj && obj.tagName != 'TABLE') 
         obj = obj.nextSibling;
@@ -62,8 +63,6 @@
     }
     
     function navigatePrevious() {
-      console.log('navigate next');
-
       var obj = _current_post.previousSibling;
       while(obj && obj.tagName != 'TABLE') 
         obj = obj.previousSibling;
@@ -87,6 +86,10 @@
       // figure out index
       var el = document.getElementById(location.hash.replace(/^#/, ''));
       console.log('location.hash', location.hash, el);
+      if(el) {
+        while(el.tagName != 'TABLE') el = el.parentNode;
+      }
+
       if(el) _current_post = el;
     }
     
@@ -604,13 +607,12 @@
     addPageNavigator();
     fixDropDown();
 
-    attachKeyboardNav();
-    
     // add no-new-posts class to seen ones
     if(do_styling_changes) {
       var page_type = getPageType();
       if(page_type == 'forum') markFullyReadThreads();
       if(page_type == 'thread') markLastSeen();
+      if(page_type == 'thread') attachKeyboardNav();
     }
   }
 

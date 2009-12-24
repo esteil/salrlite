@@ -1,6 +1,6 @@
 {
   "name": "SALR Lite",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Simple chrome extension for salrlite userscript",
   "content_scripts": [
     {
