@@ -24,9 +24,6 @@
 			<key>End</key>
 			<array>
 				<string>openallthreads.js</string>
-			</array>
-			<key>Start</key>
-			<array>
 				<string>salrlite.user.js</string>
 			</array>
 		</dict>
