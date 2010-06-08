@@ -15,13 +15,13 @@
   	button.style.marginRight = "8px";
   	button.addEventListener("click", NewPostsInNewTabs, false);
 
-    //console.log('button=', button);
+    console.log('button=', button);
     
   	var where = document.evaluate("//tr/th[contains(@class,'title')]",
   			forum, null, 7, null);
     // var where = forum.querySelector('th.title');
     where = where.snapshotItem(0);
-  	//console.log('where=', where);
+    console.log('where=', where);
   	
   	if (where)
   	{
@@ -52,7 +52,8 @@
   		i++;
   	}
 	
-    chrome.extension.sendRequest({openThreadTabs: urls}, function(response){});
+	  if(typeof(chrome) != 'undefined') chrome.extension.sendRequest({openThreadTabs: urls}, function(response){});
+	  if(typeof(safari) != 'undefined') safari.self.tab.dispatchMessage('openThreadTabs', {openThreadTabs: urls});
     
     // disable the link
     var target = event.target;
