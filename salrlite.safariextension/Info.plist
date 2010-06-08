@@ -42,5 +42,7 @@
 			<string>All</string>
 		</dict>
 	</dict>
+	<key>Update Manifest URL</key>
+	<string>http://ericiii.net/sa/safari-extensions/latest.plist</string>
 </dict>
 </plist>
