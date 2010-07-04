@@ -42,9 +42,21 @@ if(isChrome) {
   safari.application.addEventListener("message", function(msgEvent) {
     console.log('Request ', msgEvent, 'from', msgEvent.target.url);
     
-    var data = msgEvent.message;
-    if(data.openThreadTabs) {
-      openTabsForUrls(data.openThreadTabs);
+    switch(msgEvent.name) {
+      case 'openThreadTabs':
+        var data = msgEvent.message;
+        if(data.openThreadTabs) {
+          openTabsForUrls(data.openThreadTabs);
+        }
+        break;
+      case 'settings':
+        var settings = {
+          floatThreads: safari.extension.settings.floatThreads,
+          keyboardNav: safari.extension.settings.keyboardNav,
+          pageNavigator: safari.extension.settings.pageNavigator
+        };
+        msgEvent.target.page.dispatchMessage('settings', settings);
+        break;
     }
   }, false);
 }

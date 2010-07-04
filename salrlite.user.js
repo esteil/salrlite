@@ -129,9 +129,29 @@
   var salr_enable_pager_fading = true;
   var salr_hide_images_from_read_posts = false;
   var do_styling_changes = true;
+  var enable_page_navigator = true;
+  var enable_keyboard_nav = true;
   
   // Move seen threads to the top (so unread | read | unseen), keeping order
   var move_seen_to_top = true;
+
+  if(typeof(safari) != 'undefined') {
+    safari.self.tab.dispatchMessage('settings', '');
+    safari.self.addEventListener('message', function(evt) {
+      console.log('event', evt, evt.message);
+      if(evt.name == 'settings') {
+        SALR.settings = evt.message;
+        initializeSalrSettings();
+        doLastReadStuff();
+      }
+    }, false);
+  }
+  
+  function initializeSalrSettings() {
+    enable_page_navigator = SALR.settings.pageNavigator;
+    enable_keyboard_nav = SALR.settings.keyboardNav;
+    move_seen_to_top = SALR.settings.floatThreads;
+  }
   
   /* CSS Utility functions (for add/remove class, basically)
   from http://fredbird.org/lire/log/2005-09-16-javascript-css-functions */
@@ -604,7 +624,7 @@
     if(salr_hide_images_from_read_posts) addCSS('tr.seen1 td.postbody img.img, tr.seen2 td.postbody img.img, tr.seen1 td.postbody img.timg, tr.seen2 td.postbody img.timg { display: none; }');
 
     // run the important stuff
-    addPageNavigator();
+    if(enable_page_navigator) addPageNavigator();
     fixDropDown();
 
     // add no-new-posts class to seen ones
@@ -612,13 +632,15 @@
       var page_type = getPageType();
       if(page_type == 'forum') markFullyReadThreads();
       if(page_type == 'thread') markLastSeen();
-      if(page_type == 'thread') attachKeyboardNav();
+      if(enable_keyboard_nav && page_type == 'thread') attachKeyboardNav();
     }
   }
 
   // on domready
   // Fx+greasemonkey runs at the appropriate time
-  if(navigator.userAgent.match(/Gecko\//)) doLastReadStuff();
-  else if(document.readyState == 'loaded' || document.readyState == 'complete') doLastReadStuff();
-  else document.addEventListener('DOMContentLoaded', doLastReadStuff, false);
+  if(typeof(safari) == 'undefined') {
+    if(navigator.userAgent.match(/Gecko\//)) doLastReadStuff();
+    else if(document.readyState == 'loaded' || document.readyState == 'complete') doLastReadStuff();
+    else document.addEventListener('DOMContentLoaded', doLastReadStuff, false);
+  }
 })();
