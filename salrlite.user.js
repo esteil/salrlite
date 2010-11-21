@@ -72,47 +72,70 @@
       markCurrentPost();
     }
     
-    // initialize marker
-    _marker = document.createElement('DIV');
-    _marker.style.position = 'absolute';
-    _marker.style.fontSize = '125%';
-    _marker.style.fontWeight = 'bold';
-    _marker.style.marginTop = '5px'
-    _marker.innerHTML = '&gt;';
-    document.body.appendChild(_marker);
+    var page_type = getPageType();
+    // initialize marker, only on thread pages
+    if(page_type == 'thread') {
+      _marker = document.createElement('DIV');
+      _marker.style.position = 'absolute';
+      _marker.style.fontSize = '125%';
+      _marker.style.fontWeight = 'bold';
+      _marker.style.marginTop = '5px'
+      _marker.innerHTML = '&gt;';
+      document.body.appendChild(_marker);
     
-    // initialize current post index, possibly from URL hash
-    if(location.hash != '') {
-      // figure out index
-      var el = document.getElementById(location.hash.replace(/^#/, ''));
-      // console.log('location.hash', location.hash, el);
-      if(el) {
-        while(el.tagName != 'TABLE') el = el.parentNode;
+      // initialize current post index, possibly from URL hash
+      if(location.hash != '') {
+        // figure out index
+        var el = document.getElementById(location.hash.replace(/^#/, ''));
+        // console.log('location.hash', location.hash, el);
+        if(el) {
+          while(el.tagName != 'TABLE') el = el.parentNode;
+        }
+
+        if(el) _current_post = el;
+      }
+    
+      if(!_current_post) {
+        var result = document.evaluate('//table[@class="post"]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+        _current_post = result.singleNodeValue;
       }
 
-      if(el) _current_post = el;
-    }
+      // console.log('current post: ' + _current_post);
     
-    if(!_current_post) {
-      var result = document.evaluate('//table[@class="post"]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-      _current_post = result.singleNodeValue;
+      markCurrentPost();
     }
-
-    // console.log('current post: ' + _current_post);
-    
-    markCurrentPost();
       
     // initialize events
     window.addEventListener('keyup', function(evt) {
       var chr = String.fromCharCode(evt.which).toLowerCase();
-      switch(chr) {
+
+      // handle thread-page only key presses
+      if(page_type == 'thread') switch(chr) {
         case 'j': // next post
           navigateNext();
-          
           break;
         case 'k': // previous post
           navigatePrevious();
-          
+          break;
+        case 'm': // reload new posts
+          reloadNewPosts();
+          break;
+      }
+      
+      // and global key presses
+      switch(chr) {
+        case 'f': // first page
+          goToFirstPage();
+          break;
+        case 'p': // previous page
+        case 'b':
+          goToPreviousPage();
+          break;
+        case 'n': // next page
+          goToNextPage();
+          break;
+        case 'l': // last page
+          goToLastPage();
           break;
         case 'h': // help
           alert("J   Next Post\nK   Previous Post");
@@ -400,7 +423,7 @@
     firstPage.title = 'Go to first page (^F)';
     if(this_page == 1) firstPage.disabled = true;
     else firstPage.addEventListener('click', function() { 
-      document.location = page_url.replace(/pagenumber=(\d+)/, 'pagenumber=1'); 
+      goToFirstPage();
     }, false);
   
     // previous page
@@ -411,7 +434,7 @@
     prevPage.title = 'Go to previous page (^P)';
     if(this_page == 1) prevPage.disabled = true;
     else prevPage.addEventListener('click', function() { 
-      document.location = page_url.replace(/pagenumber=(\d+)/, 'pagenumber=' + (this_page - 1)); 
+      goToPreviousPage();
     }, false);
    
     // next page
@@ -422,7 +445,7 @@
     nextPage.title = 'Go to next page (^N)';
     if(this_page == total_pages) nextPage.disabled = true;
     else nextPage.addEventListener('click', function() { 
-      document.location = page_url.replace(/pagenumber=(\d+)/, 'pagenumber=' + (this_page + 1)); 
+      goToNextPage();
     }, false);
  
     // last page
@@ -433,7 +456,7 @@
     lastPage.title = 'Go to last page (^L)';
     if(this_page == total_pages) lastPage.disabled = true;
     else lastPage.addEventListener('click', function() { 
-      document.location = page_url.replace(/pagenumber=(\d+)/, 'pagenumber=' + (total_pages)); 
+      goToLastPage();
     }, false);
 
     // last seen post (@)
@@ -445,7 +468,7 @@
     
     if(!is_thread_page) lastPostButton.disabled = true; // can't use on forum pages
     else lastPostButton.addEventListener('click', function() {
-      location.replace('showthread.php?threadid=' + getThreadID(location.href) + '&goto=newpost');
+      reloadNewPosts();
     }, false);
 
     // dropdown
@@ -460,7 +483,7 @@
     pageSelector.selectedIndex = Number(this_page) - 1;
     if(total_pages == 1) pageSelector.disabled = true;
     else pageSelector.addEventListener('change', function() { 
-      document.location = page_url.replace(/pagenumber=(\d+)/, 'pagenumber=' + (Number(pageSelector.selectedIndex) + 1)); 
+      goToPage(Number(pageSelector.selectedIndex) + 1);
     }, false);
 
     wrapper.appendChild(firstPage);
@@ -472,32 +495,45 @@
     wrapper.appendChild(lastPage);
 
     document.body.appendChild(wrapper);
+  }
+  
+  function goToPage(page) {
+    var total_pages = getTotalNumberOfPages();
+    var page_url = window._salr_page_number_url;
+    var this_page = Number(getPageNumber(location.href));
+    var is_thread_page = (getPageType() == 'thread');
+
+    // special handler for last page
+    if(page == 'last') page = total_pages;
+    if(page == 'first') page = 1;
+    if(page == 'next') page = this_page + 1;
+    if(page == 'previous') page = this_page - 1;
+
+    if(this_page == page) return;
+    if(page > total_pages) return;
+    if(page < 1) return;
     
-    // register page listener
-    window.addEventListener('keyup', function(evt) {
-      if(!evt.ctrlKey) return;
-      
-      //console.log('which=', evt.which, 'key', String.fromCharCode(evt.which));
-      
-      switch(String.fromCharCode(evt.which)) {
-        case 'F':
-          if(this_page != 1) document.location = page_url.replace(/pagenumber=(\d+)/, 'pagenumber=1'); 
-          break;
-        case 'P':
-          if(this_page != 1) document.location = page_url.replace(/pagenumber=(\d+)/, 'pagenumber=' + (this_page - 1)); 
-          break;
-        case 'N':
-          if(this_page != total_pages) document.location = page_url.replace(/pagenumber=(\d+)/, 'pagenumber=' + (this_page + 1)); 
-          break;
-        case 'L':
-          if(this_page != total_pages) document.location = page_url.replace(/pagenumber=(\d+)/, 'pagenumber=' + (total_pages)); 
-          break;
-        case 'M':
-        case 'K':
-          if(is_thread_page) location.replace('showthread.php?threadid=' + getThreadID(location.href) + '&goto=newpost');
-          break;
-      }
-    }, false);
+    document.location = page_url.replace(/pagenumber=(\d+)/, 'pagenumber=' + page);
+  }
+  
+  function goToFirstPage() {
+    goToPage(1);
+  }
+  
+  function goToLastPage() {
+    goToPage('last');
+  }
+  
+  function goToNextPage() {
+    goToPage('next');
+  }
+  
+  function goToPreviousPage() {
+    goToPage('previous');
+  }
+  
+  function reloadNewPosts() {
+    location.replace('showthread.php?threadid=' + getThreadID(location.href) + '&goto=newpost');
   }
   
   function fixDropDown() {
@@ -638,7 +674,7 @@
       var page_type = getPageType();
       if(page_type == 'forum') markFullyReadThreads();
       if(page_type == 'thread') markLastSeen();
-      if(enable_keyboard_nav && page_type == 'thread') attachKeyboardNav();
+      if(enable_keyboard_nav) attachKeyboardNav();
     }
   }
 
