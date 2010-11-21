@@ -12,4 +12,4 @@ $(CRX_OUTPUT): background.html background.js manifest.json openallthreads.js sal
 		--pack-extension-key="$(KEYFILE)" \
 		--extension-output="$(CRX_OUTPUT)" \
 		--ignore-dir="^(.git|salrlite.safariextension)" \
-		--ignore-file="(Makefile|.safariextensionz)"
+		--ignore-file="(Makefile|.safariextensionz|.plist)"
