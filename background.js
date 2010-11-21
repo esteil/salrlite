@@ -34,8 +34,21 @@ if(isChrome) {
 
     if(request.openThreadTabs) {
       openTabsForUrls(request.openThreadTabs);
+      sendResponse({});
+    } else if(request.settings) {
+      // console.log('Asked for settings');
+      
+      var settings = {};
+      
+      for(k in localStorage) {
+        // console.log('key: ', k, localStorage[k]);
+        if(k.substr(0, 9) == 'settings_') {
+          settings[k.substr(9)] = localStorage[k];
+        }
+      }
+      
+      sendResponse(settings);
     }
-    sendResponse({});
   });  
 } else if(isSafari) {
   // Safari event handler

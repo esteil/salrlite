@@ -145,6 +145,12 @@
         doLastReadStuff();
       }
     }, false);
+  } else if(typeof(chrome) != 'undefined') {
+    chrome.extension.sendRequest({settings: true}, function(response){
+      SALR.settings = response;
+      initializeSalrSettings();
+      doLastReadStuff();
+    });
   }
   
   function initializeSalrSettings() {
@@ -638,7 +644,7 @@
 
   // on domready
   // Fx+greasemonkey runs at the appropriate time
-  if(typeof(safari) == 'undefined') {
+  if(typeof(safari) == 'undefined' && typeof(chrome) == 'undefined') {
     if(navigator.userAgent.match(/Gecko\//)) doLastReadStuff();
     else if(document.readyState == 'loaded' || document.readyState == 'complete') doLastReadStuff();
     else document.addEventListener('DOMContentLoaded', doLastReadStuff, false);

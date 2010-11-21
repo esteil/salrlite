@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SALRLite Options</title>
+    <script type="text/javascript" charset="utf-8">
+      function $(id) {
+        return document.getElementById(id);
+      }
+      
+      function saveSettings() {
+        localStorage['settings_floatThreads'] = $('setting-float-threads').checked;
+        localStorage['settings_keyboardNav'] = $('setting-keyboard-nav').checked;
+        localStorage['settings_pageNavigator'] = $('setting-page-navigator').checked;
+      }
+      
+      function readSetting(name, default_value) {
+        var s = localStorage['settings_' + name];
+          if(s === undefined || s === null) {
+            return default_value;
+          } else {
+            return s;
+          }
+      }
+      function initialize() {
+        var default_settings = {
+          pageNavigator: true,
+          keyboardNav: true,
+          floatThreads: true
+        };
+        
+        $('setting-float-threads').checked = readSetting('floatThreads', default_settings.floatThreads);
+        $('setting-keyboard-nav').checked = readSetting('keyboardNav', default_settings.keyboardNav);
+        $('setting-page-navigator').checked = readSetting('pageNavigator', default_settings.pageNavigator);
+      }
+    </script>
+  </head>
+  
+  <body onload="initialize();">
+    <p>
+      <label>
+        <input type="checkbox" data-setting-name='floatThreads' id="setting-float-threads"/>
+        Float unread/seen threads to top
+      </label>
+    </p>
+    
+    <p>
+      <label>
+        <input type="checkbox" data-setting-name="keyboardNav" id="setting-keyboard-nav"/>
+        Enable keyboard navigation
+      </label>
+    </p>
+    
+    <p>
+      <label>
+        <input type="checkbox" data-setting-name="pageNavigator" id="setting-page-navigator"/>
+        Enable keyboard navigation
+      </label>
+    </p>
+    
+    <p>
+      <input type="button" value="Save" onclick="saveSettings();" />
+    </p>
+  </body>  
+</html>
