@@ -138,7 +138,20 @@
           goToLastPage();
           break;
         case 'h': // help
-          alert("J   Next Post\nK   Previous Post");
+          var help = [
+            'The following hotkeys are available:',
+            '',
+            'J    Next Post',
+            'K    Previous Post',
+            'B    Previous Page',
+            'N    Next Page',
+            'F    First Page',
+            'L    Last Page',
+            'M    Load new posts',
+            'H    This help'
+          ];
+          
+          alert(help.join("\n"));
           break;
       }
     });
