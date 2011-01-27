@@ -1,11 +1,11 @@
 {
   "name": "SALR Lite",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Simple chrome extension for salrlite userscript",
   "content_scripts": [
     {
       "matches": ["http://forums.somethingawful.com/*"],
-      "js": ["salrlite.user.js", "openallthreads.js"]
+      "js": ["jquery-1.4.4.min.js", "salrlite.user.js", "openallthreads.js"]
     }
   ],
   "background_page": "background.html",

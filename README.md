@@ -4,6 +4,12 @@ November 21, 2010
 
 # Changes
 
+## 1.1.6 
+
+This is a chrome-only release.
+
+* Fix image thumbnails (based on https://github.com/scottferg/salr-chrome/commit/c729617316af9f5179921c771d106ea28fdb4dfc)
+
 ## 1.1.5 (November 21, 2010)
 
 * Added options page to Chrome build

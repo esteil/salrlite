@@ -186,6 +186,7 @@
       SALR.settings = response;
       initializeSalrSettings();
       doLastReadStuff();
+      fixTimg();
     });
   }
   
@@ -691,6 +692,49 @@
     }
   }
 
+  // Fix timg expansion in chrome
+  // via https://github.com/scottferg/salr-chrome/commit/c729617316af9f5179921c771d106ea28fdb4dfc
+  //
+  // This is a hacked up one to not use jquery
+  function fixTimg() {
+    // add css
+    addCSS(".timg-fix.squished { max-width: 200px; max-height: 170px; }");
+    addCSS(".timg-fix.expanded { max-width: none; max-height: none; }");
+    addCSS(".timg-fix.container { z-index: 5; position: relative; white-space: nowrap; height: 0px; }");
+    addCSS(".timg-fix.note { z-index: 20;	opacity: 0.65; background-color: blue;  background-image:url('http://i.somethingawful.com/core/icon/fsilk/shape_move_backwards.png'); background-repeat:no-repeat; position:absolute; top:0; left:0; font-size:9px; color:#fff; padding:2px 6px; cursor:pointer; margin:11px 5px; margin-top: 1px; margin-left: 1px; padding-left:22px; background-position: 4px 0; border:1px #ccc dotted; }");
+    addCSS(".timg-fix.note.expanded { background-image:url('http://i.somethingawful.com/core/icon/fsilk/shape_move_forwards.png'); }");
+    
+    jQuery('.postbody img.timg')
+      .removeClass('timg peewee expanded loading complete')
+      .removeAttr('width')
+      .removeAttr('height')
+      .removeAttr('border')
+      .addClass('timg-fix squished');
+      
+    jQuery('img.timg-fix').each(function() {
+      var me = jQuery(this);
+      
+      var div = jQuery('<DIV>')
+                  .addClass('timg-fix note')
+                  .text(this.naturalHeight + 'x' + this.naturalHeight)
+                  .css('display', 'none')
+                  .css('top', me.offset().top)
+                  .css('left', me.offset().left)
+                  .attr('title', 'Click to toggle size')
+                  .click(function() { me.toggleClass('squished expanded'); jQuery(this).toggleClass('expanded'); })
+                  .hover(function() { div.css('display', 'block'); }, function() { div.css('display', 'none'); });
+      
+      jQuery(this)
+        .before(div)
+        .hover(function() { div.css('display', 'block'); }, function() { div.css('display', 'none'); });
+    });
+    
+    jQuery('img.squished').click(function(evt) {
+      jQuery(this).toggleClass('squished expanded');
+      jQuery(this).prev().toggleClass('expanded');
+    });
+  }
+  
   // on domready
   // Fx+greasemonkey runs at the appropriate time
   if(typeof(safari) == 'undefined' && typeof(chrome) == 'undefined') {
