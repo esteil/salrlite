@@ -33,7 +33,7 @@
   {
   	var eval, node, name;
   	event.preventDefault();
-  	eval = document.evaluate("//tbody/tr/td/div/a[contains(@class,'count')]",
+  	eval = document.evaluate("//tbody/tr/td/div/div/a[contains(@class,'count')]",
   			document.getElementById("forum"), null, 7, null);
     // eval = document.getElementById('forum').querySelectorAll('tbody tr td div a.count');
     // for (i = 0; i < eval.length; i++)
