@@ -7,6 +7,13 @@
 // various parts from SA Last Read for Safari
 
 (function (){
+  function dlog() {
+    var log = Function.prototype.bind.call(console.log, console);
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift('[SALR] ');
+    log.apply(console, args);
+  }
+
   var SALR = {};
   SALR.KeyboardNavigator = function() {
     window._keyboard_nav = this;
@@ -43,7 +50,7 @@
       if(!_current_post) return;
       
       var pos = getDimensions(_current_post);
-      console.log(_current_post);
+      dlog(_current_post);
       
       _marker.style.left = (pos.left - _marker.offsetWidth) + "px";
       _marker.style.top = pos.top + "px";
@@ -87,7 +94,7 @@
       if(location.hash != '') {
         // figure out index
         var el = document.getElementById(location.hash.replace(/^#/, ''));
-        // console.log('location.hash', location.hash, el);
+        dlog('location.hash', location.hash, el);
         if(el) {
           while(el.tagName != 'TABLE') el = el.parentNode;
         }
@@ -100,7 +107,7 @@
         _current_post = result.singleNodeValue;
       }
 
-      // console.log('current post: ' + _current_post);
+      dlog('current post: ' + _current_post);
     
       markCurrentPost();
     }
@@ -174,7 +181,7 @@
   if(typeof(safari) != 'undefined') {
     safari.self.tab.dispatchMessage('settings', '');
     safari.self.addEventListener('message', function(evt) {
-      console.log('event', evt, evt.message);
+      dlog('event', evt, evt.message);
       if(evt.name == 'settings') {
         SALR.settings = evt.message;
         initializeSalrSettings();
@@ -186,7 +193,6 @@
       SALR.settings = response;
       initializeSalrSettings();
       doLastReadStuff();
-      fixTimg();
     });
   }
   
@@ -289,7 +295,7 @@
 
 	function getThreadID(loc) {
 		if(_threadId) return _threadId;
-		//log("[START] getThreadID");
+		dlog("[START] getThreadID");
 		var r = 0;
 
 		if (loc.match(/threadid=(\d+)/i)) {
@@ -325,6 +331,7 @@
 		}
 
 		_threadId = r;
+    dlog('Got thread id', _threadId);
 		return r;
 	}
 	
@@ -346,6 +353,8 @@
   			}
   		}
   	}
+
+    dlog('Got forum id', r);
 
   	return r;
   }
@@ -380,11 +389,13 @@
       }
     }
 
+    dlog('Got total number of pages', pageTotal);
+
     return pageTotal;
   }
  
   function getPageNumber(loc) {
-  //log("[START] getPageNumber");
+    dlog("[START] getPageNumber");
 
     var r = 1;
     if(loc.match(/pagenumber=(\d+)/i)) {
@@ -398,6 +409,8 @@
         r = 1;
       }
     }
+
+    dlog('Got page number', r);
 
     return r;
   }
@@ -616,7 +629,7 @@
       }
     }
     
-    console.log('first unseen', first_unseen, first_unseen.innerText);
+    dlog('first unseen', first_unseen, first_unseen.innerText);
     
     if(move_seen_to_top) {
       for(var i in move_new) first_unseen.parentNode.insertBefore(move_new[i], first_unseen);
@@ -656,6 +669,7 @@
   }
   
   function doLastReadStuff() {
+    dlog('Doing Last Read Stuff');
     
     // add the styles necessary for the page navigator
     addCSS('div.salr_page_navigator { position: fixed; right: 0px; bottom: 0px; background: #ddd; padding: 4px; border: 1px #888 solid; border-bottom: none; border-right: none; }');
