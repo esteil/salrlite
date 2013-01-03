@@ -90,7 +90,7 @@
       _marker.style.fontWeight = 'bold';
       _marker.style.marginTop = '5px'
       _marker.innerHTML = '&gt;';
-      document.body.appendChild(_marker);
+      // document.body.appendChild(_marker);
     
       // initialize current post index, possibly from URL hash
       if(location.hash != '') {
@@ -572,47 +572,32 @@
   // This finds all the threads with class seen, where they're fully read (only the "forget" link included)
   // This marks each TD with an additioanl 'nonew' class
   function markFullyReadThreads() {
-    var seen_threads_xpath = "//tr[contains(@class,'seen')]/td[contains(@class,'title')]/div[contains(@class,'lastseen')]";
-    
-    // find the positions to insert
-    var first_unseen = document.getElementById('forum').getElementsByTagName('tbody')[0].getElementsByTagName('tr')[0];
-    // skip announcement thread
-    //if(first_unseen.id == '' || first_unseen.id == null) first_unseen = first_unseen.nextSibling;
-    
-    // make sure it is the first unseen thread, not just any thread
-    while(first_unseen.className.match(/\bseen\b/i))
-      first_unseen = first_unseen.nextSibling;
-    
-    var move_read = [];
-    var move_new = []
-    
-    var result = document.evaluate(seen_threads_xpath, document, null, 6, null);
-    var i = 0, node;
-    while(node = result.snapshotItem(i++)) {
-      var parent = node.parentNode;
-      var parent = node.parentNode;
-      while(parent && (parent.tagName != 'tr' && parent.tagName != 'TR')) {
-        parent = parent.parentNode;
-      }
-      
-      if(document.evaluate('count(a)', node, null, 1, null).numberValue == 1) {
-        if(parent) {
-          CSS.swapClasses(parent, 'seen', 'salr_nonew');
-          move_read.push(parent);
-        }
+    // find the first unseen thread and store it, to use as an anchor for repositioning stuff later
+    var first_unseen = $('tr.thread:not(.seen):first');
+
+    var seen_threads = $('tr.thread.seen');
+
+    var move_read = [], move_new = [];
+
+    seen_threads.each(function() {
+      var $thread = $(this);
+
+      if($thread.has('div.lastseen a.count').length > 0) {
+        // has new posts
+        $thread.addClass('salr_seen');
+        move_new.push(this);
       } else {
-        if(parent) {
-          CSS.swapClasses(parent, 'seen', 'salr_seen');
-          move_new.push(parent);
-        }
+        // has no new posts
+        $thread.addClass('salr_nonew');
+        move_read.push(this);
       }
-    }
-    
+    });
+
     dlog('first unseen', first_unseen, first_unseen.innerText);
     
     if(move_seen_to_top) {
-      for(var i in move_new) first_unseen.parentNode.insertBefore(move_new[i], first_unseen);
-      for(var i in move_read) first_unseen.parentNode.insertBefore(move_read[i], first_unseen);
+      for(var i in move_new) { $(move_new[i]).insertBefore(first_unseen) }
+      for(var i in move_read) { $(move_read[i]).insertBefore(first_unseen) }
     }
   }
   
@@ -656,17 +641,28 @@
     addCSS('div.salr_page_navigator.salr_page_navigator_fade:hover { opacity: 1.0; }');
 
     if(do_styling_changes) {
-      // and the new thread highlights
-      // these are just .png from the SafariLastRead default theme
-      // new seen threads (new-posts.png)
-      addCSS('tr.thread.salr_seen td { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAABACAYAAADbER1AAAAABGdBTUEAANbY1E9YMgAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAXSURBVHjaYp555n8DEwMQjBLkEAABBgDpvwNmEODi1AAAAABJRU5ErkJggg==) !important; }');
-      // new all-read threads (no-new-posts.png)
-      addCSS('tr.thread.salr_nonew td { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAABACAYAAADbER1AAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAwNC8yMC8wNeA4ZJwAAAAldEVYdFNvZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIE1YIDIwMDSHdqzPAAAAI0lEQVQokWOaOXOmAxMDEDAxMjJCCTQuGoFTlooSg908uAQAN4oDIr2YVscAAAAASUVORK5CYII=) !important; }');
+      // new colors: (blue overlay)
+      //   title:                                 c0defc      #E8F0F8
+      //   icon icon2 star author views lastpost: ccdcec      #D4E1EE
+      //   replies seen rating:                   beccdc      #C7D6E5
+      // seen colors: (grey overlay)
+      //   title:                                 d8dee4
+      //   icon icon2 star author views lastpost: cdd3d9
+      //   replies seen rating:                   c0c6cb
+
+      addCSS('#forum tr.salr_seen td.title { background-color: #c0defc !important }');
+      addCSS('#forum tr.salr_seen td.icon, #forum tr.salr_seen td.icon2, #forum tr.salr_seen td.star, #forum tr.salr_seen td.author, #forum tr.salr_seen td.views, #forum tr.salr_seen td.lastpost { background-color: #ccdcec !important; }');
+      addCSS('#forum tr.salr_seen td.replies, #forum tr.salr_seen td.rating { background-color: #beccdc !important; }');
+
+      addCSS('#forum tr.salr_nonew td.title { background-color: #d8dee4 !important }');
+      addCSS('#forum tr.salr_nonew td.icon, #forum tr.salr_nonew td.icon2, #forum tr.salr_nonew td.star, #forum tr.salr_nonew td.author, #forum tr.salr_nonew td.views, #forum tr.salr_nonew td.lastpost { background-color: #cdd3d9 !important; }');
+      addCSS('#forum tr.salr_nonew td.replies, #forum tr.salr_nonew td.rating { background-color: #c0c6cb !important; }');
+
       // seen posts, just the darker blue?
-      addCSS('table.post tr.seen1 td, table.post tr.seen2 td { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAABACAYAAADbER1AAAAABGdBTUEAANbY1E9YMgAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAXSURBVHjaYp555n8DEwMQjBLkEAABBgDpvwNmEODi1AAAAABJRU5ErkJggg==) !important; }');
+      // addCSS('table.post tr.seen1 td, table.post tr.seen2 td { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAABACAYAAADbER1AAAAABGdBTUEAANbY1E9YMgAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAXSURBVHjaYp555n8DEwMQjBLkEAABBgDpvwNmEODi1AAAAABJRU5ErkJggg==) !important; }');
 
       // last seen post
-      addCSS('table.post tr.salr_post_lastseen { border-bottom: 4px dodgerblue dashed !important; }');
+      // addCSS('table.post tr.salr_post_lastseen { border-bottom: 4px dodgerblue dashed !important; }');
     }
 
     // Hide images from read posts
