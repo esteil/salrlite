@@ -7,6 +7,8 @@
 // various parts from SA Last Read for Safari
 
 (function (){
+  var $ = jQuery;
+
   function dlog() {
     var log = Function.prototype.bind.call(console.log, console);
     var args = Array.prototype.slice.call(arguments);
@@ -112,8 +114,8 @@
       markCurrentPost();
     }
       
-    // initialize events
-    window.addEventListener('keyup', function(evt) {
+    // initialize events only on thread and forum pages
+    if(page_type == 'thread' || page_type == 'forum') window.addEventListener('keyup', function(evt) {
       var chr = String.fromCharCode(evt.which).toLowerCase();
 
       // handle thread-page only key presses
@@ -362,33 +364,10 @@
   // Get the current page number from the page links at the top of the page
   // Basically, fall back to 1 if we get a problem.
   function getTotalNumberOfPages() {
-    var loc = location.href;
+    var $dropdown = $('div.pages select');
+    var pageTotal = $dropdown.find('option:last').val();
 
-    var pageNumberDivs = CSS.getElementsByClassName('pages', document, 'div');
-    var pageNumberDiv;
-    var pageTotal = 1;
-
-    if(pageNumberDiv = pageNumberDivs[0]) {
-      if(pageNumberDiv.innerHTML.match(/\((\d+)\): /)) {
-        pageTotal = Number(RegExp.$1);
-      } else {
-        pageTotal = 1;
-      }
-
-      // this really shouldn't be here, but eh
-      var aTags = CSS.getElementsByClassName('pagenumber', pageNumberDiv, 'a');
-      var aTag;
-      for(var i = 0; i < aTags.length; i++) {
-        if(!aTags[i].href.match(/(forumid|threadid)=/i)) continue;
-        if(getPageType() == 'thread' && !aTags[i].href.match(/threadid=/i)) continue;
-        if(getPageType() == 'forum' && !aTags[i].href.match(/forumid=/i)) continue;
-
-        aTag = aTags[i];
-        window._salr_page_number_url = aTag.href;
-        break;
-      }
-    }
-
+    window._salr_page_number_url = $dropdown.data('url') + '&pagenumber=1'
     dlog('Got total number of pages', pageTotal);
 
     return pageTotal;
